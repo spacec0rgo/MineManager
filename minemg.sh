@@ -49,12 +49,12 @@ GREEN="\033[1;32m"
 #PURPLE="\033[1;35m"
 #CYAN="\033[1;36m"
 #UND_CYAN="\033[1;4;36m"
-LIGTH_GRAY="\033[0;37m"
+LIGHT_GRAY="\033[0;37m"
 RESET="\033[0m"
 
 ### HELP PAGE
 
-helpPage="MineManager is a bash wrapper developed to manage Minecract servers
+helpPage="MineManager is a bash wrapper developed to manage Minecraft servers
 This tool is used to start/stop the server, update the server.jar file, 
 send admin commands, check on server status and clear server logs
 
@@ -90,77 +90,77 @@ function handleFlags () {
         	while [ $# -gt 0 ]; do
                         case $1 in
                                 -h | --help)
-                                        printHelp
-                                        exit 0
-                                        shift;;
-				--start)
-                                        startMC=1
-                                        ;;
-				--stop)
-                                        serverStop=1
-                                        serverCommand "stop"
-                                        ;;
+									printHelp
+									exit 0
+									shift;;
+								--start)
+									startMC=1
+									;;
+								--stop)
+									serverStop=1
+									serverCommand "stop"
+									;;
                                 -c | --command)
-                                        serverCommand "$2"
-                                        shift;;
+									serverCommand "$2"
+									shift;;
                                 -up | --update)
-                                        updateServer=1
-                                        ;;
-				--status)
-                                        if [ $(serverStatus) -eq 1 ]; then
-						echo -e "${GREEN}[+] MC server is up and running ${RESET}"
-						echo -e "${BLUE}[+] Server version: ${LIGTH_GRAY}$(serverVersion) ${RESET}"
-						exit 0
-					else
-						echo -e "${BLUE}[+] No active MC server instance ${RESET}"
-						exit 0
-					fi
-                                        ;;
+									updateServer=1
+									;;
+								--status)
+									if [ $(serverStatus) -eq 1 ]; then
+										echo -e "${GREEN}[+] MC server is up and running ${RESET}"
+										echo -e "${BLUE}[+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
+										exit 0
+									else
+										echo -e "${BLUE}[+] No active MC server instance ${RESET}"
+										exit 0
+									fi
+									;;
                                 -vv | --versions)
-                                        num_re='^[0-9]+$'
-                                        if [[ "$2" == "all" ]]; then
-                                        	retrieveVersions "0"
-					elif [[ "$2" =~ ${num_re} ]]; then
-						retrieveVersions "$2"
-					elif [[ -z "$2" ]]; then
-						retrieveVersions "0"
-					else
-						echo "Error: Invalid option \"$2\""
-					fi
-					printHelp
-					exit 1
-                                        shift;;
-				-iv | --install-version)
-					installVersion="$2"
-                                        if [ -z $installVersion ]; then
-						echo -e "${YELLOW}[!] No release version provided ${RESET}"
-				        	echo -e "${RED}[\u00d7] Aborted ${RESET}"
-						exit 1
-					fi
-                                        shift;;
-				-sku |--skip-up-check)
-                                        skipCheck=1
-                                        ;;
-                                -fd | --force-donwload)
-                                        forceDownload=1
-                                        ;;
+									num_re='^[0-9]+$'
+									if [[ "$2" == "all" ]]; then
+										retrieveVersions "0"
+									elif [[ "$2" =~ ${num_re} ]]; then
+										retrieveVersions "$2"
+									elif [[ -z "$2" ]]; then
+										retrieveVersions "0"
+									else
+										echo "Error: Invalid option \"$2\""
+									fi
+									printHelp
+									exit 1
+									shift;;
+								-iv | --install-version)
+									installVersion="$2"
+									if [ -z $installVersion ]; then
+										echo -e "${YELLOW}[!] No release version provided ${RESET}"
+										echo -e "${RED}[\u00d7] Aborted ${RESET}"
+										exit 1
+									fi
+									shift;;
+								-sku |--skip-up-check)
+									skipCheck=1
+									;;
+                                -fd | --force-download)
+									forceDownload=1
+									;;
                                 -bak | --backup)
-                                        createBackup "$2"
-                                        shift;;
+									createBackup "$2"
+									shift;;
                                 -cls | --clean-logs)
-                                        removeLogs
-                                        ;;
+									removeLogs
+									;;
                                 ### Wildcard
                                 *)
-                                        if [ ! -f "$1" ]; then
-                                                echo "Invalid option: $1" >&2
-                                                echo -n $'\n'
-                                                printHelp
-                                                exit 1
-                                        else
-                                                filename="$1"
-                                        fi
-                                        ;;
+									if [ ! -f "$1" ]; then
+											echo "Invalid option: $1" >&2
+											echo -n $'\n'
+											printHelp
+											exit 1
+									else
+											filename="$1"
+									fi
+									;;
                         esac
                         shift
                 done
@@ -190,16 +190,16 @@ function createBackup() {
 	fi
 	# Then we need to confirm the world directory indeed exists
 	if [[ ! -d "${worldDir}/${WORLD_NAME}" ]]; then
-		echo -e "${YELLOW}[!] Found no world named ${LIGTH_GRAY}$WORLD_NAME${YELLOW} inside ${LIGTH_GRAY}$worldDir ${RESET}"
+		echo -e "${YELLOW}[!] Found no world named ${LIGHT_GRAY}$WORLD_NAME${YELLOW} inside ${LIGHT_GRAY}$worldDir ${RESET}"
         echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
 	# And finally, we want to confirm the backup path exists and is a directory
 	if [ ! -d "$backupPath" ]; then
 		if [ -f "$backupPath" ]; then
-			echo -e "${YELLOW}[!] Backup path ${LIGTH_GRAY}$backupPath${YELLOW} is not a directory ${RESET}"
+			echo -e "${YELLOW}[!] Backup path ${LIGHT_GRAY}$backupPath${YELLOW} is not a directory ${RESET}"
 		else
-			echo -e "${YELLOW}[!] Backup directory ${LIGTH_GRAY}$backupPath${YELLOW} does not exists ${RESET}"
+			echo -e "${YELLOW}[!] Backup directory ${LIGHT_GRAY}$backupPath${YELLOW} does not exists ${RESET}"
 		fi
         echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
@@ -209,37 +209,37 @@ function createBackup() {
 	local backupName="$(date "+%Y-%m-%d")_${WORLD_NAME}_bak.tar.gz"
 	tar -czf ${backupName} -C "${backupPath}" "${worldDir}/${WORLD_NAME}" > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
-		echo -e "${BLUE}[+] Successfully created ${LIGTH_GRAY}$backupName${YELLOW} at ${LIGTH_GRAY}$backupPath ${RESET}"
+		echo -e "${BLUE}[+] Successfully created ${LIGHT_GRAY}$backupName${YELLOW} at ${LIGHT_GRAY}$backupPath ${RESET}"
 		chown "${mcServerUser}:${mcServerUser}" "${backupPath}/${backupName}"
 	else
-		echo -e "${YELLOW}[!] Error creating ${LIGTH_GRAY}$backupName${YELLOW}: something went wrong ${RESET}"
+		echo -e "${YELLOW}[!] Error creating ${LIGHT_GRAY}$backupName${YELLOW}: something went wrong ${RESET}"
 	fi
 	exit 0
 }
 
 function serverCommand() {
-        # Send commands to the MC world server
-        local mc_cmd="$1"
-        # Check that the command contains some value
-        # would not disturb contacting the server for nothing
-        if [ -z "${mc_cmd}" ]; then
-        	echo -e "${YELLOW}[!] No MC server command provided ${RESET}"
-        	echo -e "${RED}[\u00d7] Aborted ${RESET}"
-			exit 1
-		fi
-        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-        	if [ $(serverStatus) -eq 1 ] && [ "$serverStop" -eq 1 ]; then
-	        	echo -e "${BLUE}[+] Stopping MC server ... ${RESET}"
-				exit 0
-		fi
-        	echo -e "${BLUE}[+] Command '${mc_cmd}' sent successfully ${RESET}"
-        	exit 0
-        else
-        	echo -e "${YELLOW}[!] Error sending '${mc_cmd}' to server ${RESET}"
-			echo -e "${YELLOW}[+] Is the server running? ${RESET}"
-			exit 1
-        fi
+	# Send commands to the MC world server
+	local mc_cmd="$1"
+	# Check that the command contains some value
+	# would not disturb contacting the server for nothing
+	if [ -z "${mc_cmd}" ]; then
+		echo -e "${YELLOW}[!] No MC server command provided ${RESET}"
+		echo -e "${RED}[\u00d7] Aborted ${RESET}"
+		exit 1
+	fi
+	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		if [ $(serverStatus) -eq 1 ] && [ "$serverStop" -eq 1 ]; then
+			echo -e "${BLUE}[+] Stopping MC server ... ${RESET}"
+			exit 0
+	fi
+		echo -e "${BLUE}[+] Command '${mc_cmd}' sent successfully ${RESET}"
+		exit 0
+	else
+		echo -e "${YELLOW}[!] Error sending '${mc_cmd}' to server ${RESET}"
+		echo -e "${YELLOW}[+] Is the server running? ${RESET}"
+		exit 1
+	fi
 }
 
 function retrieveVersions() {
@@ -267,17 +267,17 @@ function versionCheck() {
 	if [ -z "$installVersion" ]; then
 		echo -e "${BLUE} [+] Retrieving latest release version ${RESET}"
 		local releaseVersion="$(jq -r '.latest.release' ${version_manifest})"
-		echo -e "${BLUE} [+] Found release ${LIGTH_GRAY}$releaseVersion ${RESET}"
+		echo -e "${BLUE} [+] Found release ${LIGHT_GRAY}$releaseVersion ${RESET}"
 		local releaseIndex=$(jq -r ".versions | to_entries | .[] | select(.value.id == \"${releaseVersion}\") | .key" "${version_manifest}")
 		local releaseURL=$(jq -r ".versions[${releaseIndex}].url" "${version_manifest}")
 	else
-		echo -e "${BLUE} [+] Retrieving details about release version ${LIGTH_GRAY}$installVersion ${RESET}"
+		echo -e "${BLUE} [+] Retrieving details about release version ${LIGHT_GRAY}$installVersion ${RESET}"
 		local releaseIndex=$(jq -r ".versions | to_entries | .[] | select(.value.id == \"${installVersion}\") | .key" "${version_manifest}" 2>/dev/null)
 		if [ ! -z "$releaseIndex" ]; then
-	        	echo -e "${BLUE} [+] Found release ${LIGTH_GRAY}$installVersion ${RESET}"
+	        	echo -e "${BLUE} [+] Found release ${LIGHT_GRAY}$installVersion ${RESET}"
 	        	local releaseURL=$(jq -r ".versions[${releaseIndex}].url" "${version_manifest}")
 	        else
-	        	echo -e "${YELLOW} [!] No release version ${LIGTH_GRAY}$installVersion${YELLOW} found ${RESET}"
+	        	echo -e "${YELLOW} [!] No release version ${LIGHT_GRAY}$installVersion${YELLOW} found ${RESET}"
 			isRelease=0
 			return
 	        fi
@@ -290,12 +290,12 @@ function versionCheck() {
 	releaseDownloadURL="$(jq -r '.downloads.server.url' ${release_file})"
 	javaReleaseMajorVersion="$(jq -r '.javaVersion.majorVersion' ${release_file})"
 
-	echo -e "${BLUE} [+] Veryfing Java version compatibility ${RESET}"
+	echo -e "${BLUE} [+] Verifying Java version compatibility ${RESET}"
 	javaCurrentVersion="$(java --version | grep -Eo -m 1 '\b[0-9]+(\.[0-9]+){1,2}\b')"
 	javaCurrentMajorVersion=$(echo "${javaCurrentVersion}" | cut -d '.' -f1)
 
-	echo -e "${BLUE} [+] Current Java version is ${LIGTH_GRAY}${javaCurrentVersion} ${RESET}"
-	echo -e "${BLUE} [+] Release requires version ${LIGTH_GRAY}${javaReleaseMajorVersion} ${RESET}"
+	echo -e "${BLUE} [+] Current Java version is ${LIGHT_GRAY}${javaCurrentVersion} ${RESET}"
+	echo -e "${BLUE} [+] Release requires version ${LIGHT_GRAY}${javaReleaseMajorVersion} ${RESET}"
 	if [ "$javaCurrentMajorVersion" -ne "$javaReleaseMajorVersion" ] && [ "$javaCurrentMajorVersion" -lt "$javaReleaseMajorVersion" ]; then
 		echo -e "${YELLOW} [!] Current Java version is not compatible with latest release ${RESET}"
 	    	javaCompatible=0
@@ -309,14 +309,14 @@ function versionCheck() {
 		echo -e "${BLUE} [+] Comparing server file hashes ${RESET}"
 		currentSHA1="$(sha1sum ${serverFile} | cut -d ' ' -f1)"
 		releaseSHA1="$(jq -r '.downloads.server.sha1' ${release_file})"
-		echo -e "${BLUE} [+] Current server file hash is ${LIGTH_GRAY}${currentSHA1} ${RESET}"
-		echo -e "${BLUE} [+] Release server file hash is ${LIGTH_GRAY}${releaseSHA1} ${RESET}"
+		echo -e "${BLUE} [+] Current server file hash is ${LIGHT_GRAY}${currentSHA1} ${RESET}"
+		echo -e "${BLUE} [+] Release server file hash is ${LIGHT_GRAY}${releaseSHA1} ${RESET}"
 		if [ "$releaseSHA1" == "$currentSHA1" ]; then
 			echo -e "${GREEN} [\u2713] SHA1 hashes match: no action required ${RESET}"
 			isRelease=0
 		else
 			echo -e "${YELLOW} [!] SHA1 hashes mismatch: version available for download ${RESET}"
-			echo -e "${YELLOW} [+] Download URL: ${LIGTH_GRAY}$releaseDownloadURL ${RESET}"
+			echo -e "${YELLOW} [+] Download URL: ${LIGHT_GRAY}$releaseDownloadURL ${RESET}"
 			isRelease=1
 		fi
 	fi
@@ -345,7 +345,7 @@ function serverVersion() {
 function checkFile() {
 	local filepath="$1"
 	if [ ! -f "$filepath" ]; then
-		echo -e "${YELLOW} [!] Something went wrong: file ${LIGTH_GRAY}$filepath${YELLOW} not found ${RESET}"
+		echo -e "${YELLOW} [!] Something went wrong: file ${LIGHT_GRAY}$filepath${YELLOW} not found ${RESET}"
 		echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	else
@@ -446,7 +446,7 @@ fi
 ### START OF SCRIPT
 
 echo -e "${BLUE}[+] Starting MC Server Management tool ... ${RESET}"
-echo -e "${BLUE} [+] Server directory is ${LIGTH_GRAY}$serviceDir ${RESET}"
+echo -e "${BLUE} [+] Server directory is ${LIGHT_GRAY}$serviceDir ${RESET}"
 
 if [[ "$(grep -io ${mcServerUser} /etc/passwd)" == "" ]]; then
 	echo -e "${YELLOW} [!] Missing default ${mcServerUser} server user${RESET}"
@@ -465,18 +465,18 @@ fi
 
 ### Check server file existence
 if [[ ! -f "$serverFile" ]] && [ "$javaCompatible" -eq 1 ]; then
-	echo -e "${YELLOW} [!] Missing server file at ${LIGTH_GRAY}$serverDir ${RESET}"
-	echo -e "${BLUE} [+] Downloading fresh server file from ${LIGTH_GRAY}$releaseDownloadURL ${RESET}"
+	echo -e "${YELLOW} [!] Missing server file at ${LIGHT_GRAY}$serverDir ${RESET}"
+	echo -e "${BLUE} [+] Downloading fresh server file from ${LIGHT_GRAY}$releaseDownloadURL ${RESET}"
 	wget "${releaseDownloadURL}" -P "${serverDir}" -q --show-progress
 	echo -e "${GREEN} [\u2713] Server file downloaded ${RESET}"
 
 elif [[ "$isRelease" -eq 1 ]] && [[ "$javaCompatible" -eq 1 ]]; then
 	if [ ! -z "$installVersion" ]; then
-		echo -e "${BLUE} [+] Downloading release version ${LIGTH_GRAY}$installVersion ${BLUE}from ${LIGTH_GRAY}$releaseDownloadURL ${RESET}"
+		echo -e "${BLUE} [+] Downloading release version ${LIGHT_GRAY}$installVersion ${BLUE}from ${LIGHT_GRAY}$releaseDownloadURL ${RESET}"
 		rm -f "${serverFile}" 2>/dev/null
 		wget "${releaseDownloadURL}" -P "${serverDir}" -q --show-progress
 	elif [ "$updateServer" -eq 1 ]; then
-		echo -e "${BLUE} [+] Downloading new release from ${LIGTH_GRAY}$releaseDownloadURL ${RESET}"
+		echo -e "${BLUE} [+] Downloading new release from ${LIGHT_GRAY}$releaseDownloadURL ${RESET}"
 		rm -f "${serverFile}" 2>/dev/null
 		wget "${releaseDownloadURL}" -P "${serverDir}" -q --show-progress
 	else
@@ -484,7 +484,7 @@ elif [[ "$isRelease" -eq 1 ]] && [[ "$javaCompatible" -eq 1 ]]; then
 	fi
 
 elif [[ "$isRelease" -eq 0 ]] && [[ "$javaCompatible" -eq 1 ]] && [[ "$forceDownload" -eq 1 ]]; then
-	echo -e "${YELLOW} [!] Forcing download of server JAR file from ${LIGTH_GRAY}$releaseDownloadURL ${RESET}"
+	echo -e "${YELLOW} [!] Forcing download of server JAR file from ${LIGHT_GRAY}$releaseDownloadURL ${RESET}"
 	rm -f "${serverFile}" 2>/dev/null
 	wget "${releaseDownloadURL}" -P "${serverDir}" -q --show-progress
 
@@ -492,15 +492,15 @@ elif [[ -f "$serverFile" ]]; then
 	echo -e "${YELLOW} [!] Keeping current server file ${RESET}"
 
 else
-	echo -e "${YELLOW} [!] Missing server file at ${LIGTH_GRAY}$serverDir ${RESET}"
+	echo -e "${YELLOW} [!] Missing server file at ${LIGHT_GRAY}$serverDir ${RESET}"
 	if [ "$skipCheck" -eq 1 ]; then
 		echo -e "${YELLOW} [+] Cannot download server.jar without checking requirements ${RESET}"
 	elif [ ! -z "$installVersion" ]; then
-		echo -e "${YELLOW} [+] Could not install release version ${LIGTH_GRAY}$installVersion ${RESET}"
+		echo -e "${YELLOW} [+] Could not install release version ${LIGHT_GRAY}$installVersion ${RESET}"
 	elif [ "$javaCompatible" -eq 0 ]; then
 		echo -e "${YELLOW} [+] Current Java will not run latest release server ${RESET}"
 	else
-		echo -e "${YELLOW} [+] Unkwon error ${RESET}"
+		echo -e "${YELLOW} [+] Unknown error ${RESET}"
 	fi
 	echo -e "${RED}[\u00d7] Aborted ${RESET}"
 	exit 1
@@ -536,13 +536,13 @@ fi
 if [ "$startMC" -eq 1 ]; then
 	if [ $(serverStatus) -eq 1 ]; then
 		echo -e "${YELLOW} [!] A server instance is already running ${RESET}"
-		echo -e "${YELLOW} [+] Server version: ${LIGTH_GRAY}$(serverVersion) ${RESET}"
+		echo -e "${YELLOW} [+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
 		echo -e "${YELLOW} [+] Skipping startup ${RESET}"
 		exit 1
 	fi
 
 	echo -e "${GREEN} [+] All ready: starting MC server ${RESET}"
-	echo -e "${GREEN} [+] Server version: ${LIGTH_GRAY}$(serverVersion) ${RESET}"
+	echo -e "${GREEN} [+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
 	su ${mcServerUser} -s '/bin/bash' -c "cd ${javaDir} && screen -dmS ${mcServiceName} java -Xmx${MAXIMUM_MEMORY} -Xms${INITIAL_MEMORY} -jar ${serverFile} --world ${WORLD_NAME} --universe ${worldDir} --nogui"
 	if [ $? -eq 0 ]; then
 		echo -e "${GREEN}[\u2713] MC server started successfully ${RESET}"
