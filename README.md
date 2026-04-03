@@ -6,7 +6,7 @@ Since it works quite good and served me well during the early stages of developm
 ## Options
 Here is a quick help page. I might improve the README in the future.
 ```
-MineManager is a bash wrapper developed to manage Minecract servers
+MineManager is a bash wrapper developed to manage Minecraft servers
 This tool is used to start/stop the server, update the server.jar file, 
 send admin commands, check on server status and clear server logs
 
