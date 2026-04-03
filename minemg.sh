@@ -21,6 +21,7 @@ worldDir="${serviceDir}/world"
 tmpDirJSON="/tmp/minemg_tmp"
 version_manifest="${tmpDirJSON}/version_manifest.json"
 release_file="${tmpDirJSON}/release_file.json"
+log_file="${javaDir}/logs/latest.log"
 
 javaCompatible=0
 
@@ -220,6 +221,9 @@ function createBackup() {
 function serverCommand() {
 	# Send commands to the MC world server
 	local mc_cmd="$1"
+	local timeID=$(date +%H%M%S%3N)
+	local log_start="log_marker_start_${timeID}"
+	local log_end="log_marker_end_${timeID}"
 	# Check that the command contains some value
 	# would not disturb contacting the server for nothing
 	if [ -z "${mc_cmd}" ]; then
@@ -227,13 +231,20 @@ function serverCommand() {
 		echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
+	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${log_start}$(printf \\r)\"" > /dev/null 2>&1
 	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
+	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${log_end}$(printf \\r)\"" > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		if [ $(serverStatus) -eq 1 ] && [ "$serverStop" -eq 1 ]; then
 			echo -e "${BLUE}[+] Stopping MC server ... ${RESET}"
 			exit 0
-	fi
+		fi
 		echo -e "${BLUE}[+] Command '${mc_cmd}' sent successfully ${RESET}"
+		echo -e "${BLUE}[+] Printing server response ${RESET}"
+		# Yeah, I know, it's a super long string manipulation
+		# But it's also the easiest solution that came to my mind
+		response=$(sed -n "/${timeID}/,/${log_end}/p" "${log_file}" | tail -n +2 | head -n -2 | cut -d ':' -f4 | sed 's/^[[:space:]]*//g')
+		echo "${response}"
 		exit 0
 	else
 		echo -e "${YELLOW}[!] Error sending '${mc_cmd}' to server ${RESET}"
