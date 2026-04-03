@@ -26,7 +26,7 @@ javaCompatible=0
 
 INITIAL_MEMORY="1024M"
 MAXIMUM_MEMORY="4096M"
-WORLD_NAME="homelab-mc-server"
+WORLD_NAME="mc-server"
 
 startMC=0
 updateServer=0
@@ -178,20 +178,20 @@ function createBackup() {
 	# First of all, check that the variable contains a value
 	# We first need to check if there is an instance of the MC server
 	if [ -z "${backupPath}" ]; then
-        	echo -e "${YELLOW}[!] No backup path provided ${RESET}"
-        	echo -e "${RED}[\u00d7] Aborted ${RESET}"
+        echo -e "${YELLOW}[!] No backup path provided ${RESET}"
+        echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
 	# backup must be performed when the server is stopped
 	if [ $(serverStatus) -eq 1 ]; then
-        	echo -e "${YELLOW}[!] Cannot create backup when server is running ${RESET}"
-        	echo -e "${YELLOW}[+] Stop the MC server and retry ${RESET}"
+        echo -e "${YELLOW}[!] Cannot create backup when server is running ${RESET}"
+        echo -e "${YELLOW}[+] Stop the MC server and retry ${RESET}"
 		exit 1
 	fi
 	# Then we need to confirm the world directory indeed exists
 	if [[ ! -d "${worldDir}/${WORLD_NAME}" ]]; then
 		echo -e "${YELLOW}[!] Found no world named ${LIGTH_GRAY}$WORLD_NAME${YELLOW} inside ${LIGTH_GRAY}$worldDir ${RESET}"
-        	echo -e "${RED}[\u00d7] Aborted ${RESET}"
+        echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
 	# And finally, we want to confirm the backup path exists and is a directory
@@ -201,7 +201,7 @@ function createBackup() {
 		else
 			echo -e "${YELLOW}[!] Backup directory ${LIGTH_GRAY}$backupPath${YELLOW} does not exists ${RESET}"
 		fi
-        	echo -e "${RED}[\u00d7] Aborted ${RESET}"
+        echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
 	
@@ -225,20 +225,20 @@ function serverCommand() {
         if [ -z "${mc_cmd}" ]; then
         	echo -e "${YELLOW}[!] No MC server command provided ${RESET}"
         	echo -e "${RED}[\u00d7] Aborted ${RESET}"
-		exit 1
-	fi
+			exit 1
+		fi
         su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
         if [ $? -eq 0 ]; then
         	if [ $(serverStatus) -eq 1 ] && [ "$serverStop" -eq 1 ]; then
 	        	echo -e "${BLUE}[+] Stopping MC server ... ${RESET}"
-			exit 0
+				exit 0
 		fi
         	echo -e "${BLUE}[+] Command '${mc_cmd}' sent successfully ${RESET}"
         	exit 0
         else
         	echo -e "${YELLOW}[!] Error sending '${mc_cmd}' to server ${RESET}"
-		echo -e "${YELLOW}[+] Is the server running? ${RESET}"
-		exit 1
+			echo -e "${YELLOW}[+] Is the server running? ${RESET}"
+			exit 1
         fi
 }
 
@@ -360,35 +360,35 @@ function checkFile() {
 if [ "$(id -u)" -ne 0 ]; then
 	echo -e "${YELLOW}[!] The MC management tool must be run with root privileges ${RESET}"
 	echo -e "${RED}[\u00d7] Aborted ${RESET}"
-    	exit 1
+    exit 1
 fi
 
 if [ "$(which curl &>/dev/null ; echo $?)" -ne 0 ]; then
-        echo -e "${YELLOW}[!] cURL (curl) is NOT installed ${RESET}"
-        echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-        echo -e "${RED}[\u00d7] Aborted ${RESET}"
-        exit 1
+    echo -e "${YELLOW}[!] cURL (curl) is NOT installed ${RESET}"
+    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
+    echo -e "${RED}[\u00d7] Aborted ${RESET}"
+    exit 1
 fi
 
 if [ "$(which jq &>/dev/null ; echo $?)" -ne 0 ]; then
-        echo -e "${YELLOW}[!] Jq (JSON query) is NOT installed ${RESET}"
-        echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-        echo -e "${RED}[\u00d7] Aborted ${RESET}"
-        exit 1
+    echo -e "${YELLOW}[!] Jq (JSON query) is NOT installed ${RESET}"
+    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
+    echo -e "${RED}[\u00d7] Aborted ${RESET}"
+    exit 1
 fi
 
 if [ "$(which screen &>/dev/null ; echo $?)" -ne 0 ]; then
-        echo -e "${YELLOW}[!] Screen is NOT installed ${RESET}"
-        echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-        echo -e "${RED}[\u00d7] Aborted ${RESET}"
-        exit 1
+    echo -e "${YELLOW}[!] Screen is NOT installed ${RESET}"
+    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
+    echo -e "${RED}[\u00d7] Aborted ${RESET}"
+    exit 1
 fi
 
 if [ "$(which tar &>/dev/null ; echo $?)" -ne 0 ]; then
-        echo -e "${YELLOW}[!] Tar is NOT installed ${RESET}"
-        echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-        echo -e "${RED}[\u00d7] Aborted ${RESET}"
-        exit 1
+    echo -e "${YELLOW}[!] Tar is NOT installed ${RESET}"
+    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
+    echo -e "${RED}[\u00d7] Aborted ${RESET}"
+    exit 1
 fi
 
 # Checking Java installation
@@ -410,16 +410,16 @@ handleFlags "$@"
 
 if [[ "$skipCheck" -eq 1 && ( "$updateServer" -eq 1 || "$forceDownload" -eq 1 || ! -z "$installVersion" ) ]]; then
 	echo "Invalid option: Can't download server.jar without checking release requirements" >&2
-        echo -n $'\n'
-        printHelp
-        exit 1
+    echo -n $'\n'
+    printHelp
+    exit 1
 fi
 
 if [[ "$updateServer" -eq 1 && ! -z "$installVersion" ]]; then
 	echo "Invalid option: Can't install specific version when requesting an update" >&2
-        echo -n $'\n'
-        printHelp
-        exit 1
+    echo -n $'\n'
+    printHelp
+    exit 1
 fi
 
 ### CHECK DIRECTORY EXISTENCE
