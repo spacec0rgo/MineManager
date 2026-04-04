@@ -37,6 +37,8 @@ forceDownload=0
 
 versionRegex="\b[0-9]+(\.[0-9]+){2}\b"
 
+manifestURL="https://launchermeta.mojang.com/mc/game/version_manifest.json"
+
 #############################################################
 #############################################################
 #############################################################
@@ -258,12 +260,12 @@ function retrieveVersions() {
 	local manifestVersRe="^[0-9]+(\.[0-9]+){2}$"
 	if [ ${nums} -eq 0 ]; then
 		echo -e "${BLUE}[+] Retrieving all MC server versions available to install ${RESET}"
-		curl --silent https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.versions[].id' | grep -E "${manifestVersRe}"
+		curl --silent "${manifestURL}" | jq -r '.versions[].id' | grep -E "${manifestVersRe}"
 	else
 		# strip excessive zeroes
-		realNums="$(echo $nums | sed 's/^0\+//')"
+		realNums="$(echo ${nums} | sed 's/^0\+//')"
 		echo -e "${BLUE}[+] Retrieving last ${realNums} MC server versions available to install ${RESET}"
-		curl --silent https://launchermeta.mojang.com/mc/game/version_manifest.json | jq -r '.versions[].id' | grep -E "${manifestVersRe}" | head -n "${realNums}"
+		curl --silent "${manifestURL}" | jq -r '.versions[].id' | grep -E "${manifestVersRe}" | head -n "${realNums}"
 	fi
 	exit 0
 }
@@ -272,7 +274,7 @@ function versionCheck() {
 	# Single download of JSON files
 	# this is a lot more stealthy
 	echo -e "${BLUE} [+] Fetching version manifest ${RESET}"
-	curl --silent "https://launchermeta.mojang.com/mc/game/version_manifest.json" -o "${version_manifest}" 2>/dev/null
+	curl --silent "${manifestURL}" -o "${version_manifest}" 2>/dev/null
 	checkFile "${version_manifest}"
 
 	if [ -z "$installVersion" ]; then
