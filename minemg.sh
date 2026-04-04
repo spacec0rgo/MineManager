@@ -374,40 +374,31 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-if [ "$(which curl &>/dev/null ; echo $?)" -ne 0 ]; then
-    echo -e "${YELLOW}[!] cURL (curl) is NOT installed ${RESET}"
-    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-    echo -e "${RED}[\u00d7] Aborted ${RESET}"
-    exit 1
-fi
+# Checking dependencies
+PREREQUISITES=("curl" "jq" "wget" "screen" "tar" "java")
+MISSING_DEPENDENCIES=()
 
-if [ "$(which jq &>/dev/null ; echo $?)" -ne 0 ]; then
-    echo -e "${YELLOW}[!] Jq (JSON query) is NOT installed ${RESET}"
-    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-    echo -e "${RED}[\u00d7] Aborted ${RESET}"
-    exit 1
-fi
+for dependency in "${PREREQUISITES[@]}"; do
+    if ! command -v "${dependency}" &>/dev/null; then
+        MISSING_DEPENDENCIES+=("${dependency}")
+    fi
+done
 
-if [ "$(which screen &>/dev/null ; echo $?)" -ne 0 ]; then
-    echo -e "${YELLOW}[!] Screen is NOT installed ${RESET}"
-    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-    echo -e "${RED}[\u00d7] Aborted ${RESET}"
-    exit 1
-fi
+if [ ${#MISSING_DEPENDENCIES[@]} -ne 0 ]; then
+    echo -e "${YELLOW}[!] The following dependencies are missing:${RESET}"
+    
+    for missing in "${MISSING_DEPENDENCIES[@]}"; do
+        # Hint for java
+        if [ "${missing}" == "java" ]; then
+            echo -e " - ${LIGHT_GRAY}Java (JDK or JRE, headless preferred)${RESET}"
+        else
+            echo -e " - ${LIGHT_GRAY}${missing}${RESET}"
+        fi
+    done
 
-if [ "$(which tar &>/dev/null ; echo $?)" -ne 0 ]; then
-    echo -e "${YELLOW}[!] Tar is NOT installed ${RESET}"
-    echo -e "${YELLOW}[+] Install it by using the proper package manager ${RESET}"
-    echo -e "${RED}[\u00d7] Aborted ${RESET}"
+    echo -e "\n${YELLOW}[+] Install them using your package manager${RESET}"
+    echo -e "${RED}[\u00d7] Aborted${RESET}"
     exit 1
-fi
-
-# Checking Java installation
-if [ "$(java --version > /dev/null 2>&1 ; echo $?)" -ne 0 ]; then
-	echo -e "${YELLOW}[!] No Java package installed ${RESET}"
-	echo -e "${YELLOW}[+] Install either JDK or JRE: headless is preferred ${RESET}"
-	echo -e "${RED}[\u00d7] Aborted ${RESET}"
-   	exit 1
 fi
 
 ### IF EVERYTHING IS OK
