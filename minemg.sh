@@ -10,24 +10,43 @@
 ####################### SUM VARIABLES #######################
 #############################################################
 
-mcServerUser="minecraft"
-mcServiceName="minecraft_server"
+CONFIG_FILE="$(dirname "$0")/minemg.conf"
+# Apply configuration if available
+if [[ -f "$CONFIG_FILE" ]]; then
+	source "$CONFIG_FILE"
+fi
 
-serviceDir="/opt/minecraft"
-serverDir="${serviceDir}/server"
-serverFile="${serverDir}/server.jar"
-javaDir="${serviceDir}/java"
-worldDir="${serviceDir}/world"
+# World configuration
+WORLD_NAME="${WORLD_NAME:-mc-server}"
+
+# Server memory resources
+INITIAL_MEMORY="${INITIAL_MEMORY:-1024M}"
+MAXIMUM_MEMORY="${MAXIMUM_MEMORY:-4096M}"
+
+# Service configuration
+mcServerUser="${mcServerUser:-minecraft}"
+mcServiceName="${mcServiceName:-minecraft_server}"
+
+### DIRECTORIES
+# Main server directory
+serviceDir="${serviceDir:-/opt/minecraft}"
+# Server directories
+serverDir="${serverDir:-${serviceDir}/server}"
+serverFile="${serverFile:-${serverDir}/server.jar}"
+javaDir="${javaDir:-${serviceDir}/java}"
+worldDir="${worldDir:-${serviceDir}/world}"
+log_file="${log_file:-${javaDir}/logs/latest.log}"
+
+### JAVA
+# Java binary path (multi-version environments)
+JAVA_BIN="${JAVA_BIN:-/usr/bin/java}"
+
+# Hardcoded internals
 tmpDirJSON="/tmp/minemg_tmp"
 version_manifest="${tmpDirJSON}/version_manifest.json"
 release_file="${tmpDirJSON}/release_file.json"
-log_file="${javaDir}/logs/latest.log"
 
 javaCompatible=0
-
-INITIAL_MEMORY="1024M"
-MAXIMUM_MEMORY="4096M"
-WORLD_NAME="mc-server"
 
 startMC=0
 updateServer=0
@@ -87,87 +106,87 @@ function printHelp () {
 }
 
 function handleFlags () {
-        if [ $# -eq 0 ]; then
-        	echo -e "${BLUE}[#] Invoked MC setup ${RESET}"
-        else
-        	while [ $# -gt 0 ]; do
-                        case $1 in
-                                -h | --help)
-									printHelp
-									exit 0
-									shift;;
-								--start)
-									startMC=1
-									;;
-								--stop)
-									serverStop=1
-									serverCommand "stop"
-									;;
-                                -c | --command)
-									serverCommand "$2"
-									shift;;
-                                -up | --update)
-									updateServer=1
-									;;
-								--status)
-									if [ $(serverStatus) -eq 1 ]; then
-										echo -e "${GREEN}[+] MC server is up and running ${RESET}"
-										echo -e "${BLUE}[+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
-										exit 0
-									else
-										echo -e "${BLUE}[+] No active MC server instance ${RESET}"
-										exit 0
-									fi
-									;;
-                                -vv | --versions)
-									num_re='^[0-9]+$'
-									if [[ "$2" == "all" ]]; then
-										retrieveVersions "0"
-									elif [[ "$2" =~ ${num_re} ]]; then
-										retrieveVersions "$2"
-									elif [[ -z "$2" ]]; then
-										retrieveVersions "0"
-									else
-										echo "Error: Invalid option \"$2\""
-									fi
-									printHelp
-									exit 1
-									shift;;
-								-iv | --install-version)
-									installVersion="$2"
-									if [ -z $installVersion ]; then
-										echo -e "${YELLOW}[!] No release version provided ${RESET}"
-										echo -e "${RED}[\u00d7] Aborted ${RESET}"
-										exit 1
-									fi
-									shift;;
-								-sku |--skip-up-check)
-									skipCheck=1
-									;;
-                                -fd | --force-download)
-									forceDownload=1
-									;;
-                                -bak | --backup)
-									createBackup "$2"
-									shift;;
-                                -cls | --clean-logs)
-									removeLogs
-									;;
-                                ### Wildcard
-                                *)
-									if [ ! -f "$1" ]; then
-											echo "Invalid option: $1" >&2
-											echo -n $'\n'
-											printHelp
-											exit 1
-									else
-											filename="$1"
-									fi
-									;;
-                        esac
-                        shift
-                done
-        fi
+	if [ $# -eq 0 ]; then
+		echo -e "${BLUE}[#] Invoked MC setup ${RESET}"
+	else
+		while [ $# -gt 0 ]; do
+			case $1 in
+				-h | --help)
+					printHelp
+					exit 0
+					shift;;
+				--start)
+					startMC=1
+					;;
+				--stop)
+					serverStop=1
+					serverCommand "stop"
+					;;
+				-c | --command)
+					serverCommand "$2"
+					shift;;
+				-up | --update)
+					updateServer=1
+					;;
+				--status)
+					if [ $(serverStatus) -eq 1 ]; then
+						echo -e "${GREEN}[+] MC server is up and running ${RESET}"
+						echo -e "${BLUE}[+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
+						exit 0
+					else
+						echo -e "${BLUE}[+] No active MC server instance ${RESET}"
+						exit 0
+					fi
+					;;
+				-vv | --versions)
+					num_re='^[0-9]+$'
+					if [[ "$2" == "all" ]]; then
+						retrieveVersions "0"
+					elif [[ "$2" =~ ${num_re} ]]; then
+						retrieveVersions "$2"
+					elif [[ -z "$2" ]]; then
+						retrieveVersions "0"
+					else
+						echo "Error: Invalid option \"$2\""
+					fi
+					printHelp
+					exit 1
+					shift;;
+				-iv | --install-version)
+					installVersion="$2"
+					if [ -z $installVersion ]; then
+						echo -e "${YELLOW}[!] No release version provided ${RESET}"
+						echo -e "${RED}[\u00d7] Aborted ${RESET}"
+						exit 1
+					fi
+					shift;;
+				-sku |--skip-up-check)
+					skipCheck=1
+					;;
+				-fd | --force-download)
+					forceDownload=1
+					;;
+				-bak | --backup)
+					createBackup "$2"
+					shift;;
+				-cls | --clean-logs)
+					removeLogs
+					;;
+				### Wildcard
+				*)
+					if [ ! -f "$1" ]; then
+							echo "Invalid option: $1" >&2
+							echo -n $'\n'
+							printHelp
+							exit 1
+					else
+							filename="$1"
+					fi
+					;;
+			esac
+			shift
+		done
+	fi
 }
 
 function removeLogs() {
@@ -304,7 +323,7 @@ function versionCheck() {
 	javaReleaseMajorVersion="$(jq -r '.javaVersion.majorVersion' ${release_file})"
 
 	echo -e "${BLUE} [+] Verifying Java version compatibility ${RESET}"
-	javaCurrentVersion="$(java --version | grep -Eo -m 1 '\b[0-9]+(\.[0-9]+){1,2}\b')"
+	javaCurrentVersion="$(${JAVA_BIN} --version | grep -Eo -m 1 '\b[0-9]+(\.[0-9]+){1,2}\b')"
 	javaCurrentMajorVersion=$(echo "${javaCurrentVersion}" | cut -d '.' -f1)
 
 	echo -e "${BLUE} [+] Current Java version is ${LIGHT_GRAY}${javaCurrentVersion} ${RESET}"
@@ -377,7 +396,7 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Checking dependencies
-PREREQUISITES=("curl" "jq" "wget" "screen" "tar" "java")
+PREREQUISITES=("curl" "jq" "wget" "screen" "tar" "${JAVA_BIN}")
 MISSING_DEPENDENCIES=()
 
 for dependency in "${PREREQUISITES[@]}"; do
@@ -391,7 +410,7 @@ if [ ${#MISSING_DEPENDENCIES[@]} -ne 0 ]; then
     
     for missing in "${MISSING_DEPENDENCIES[@]}"; do
         # Hint for java
-        if [ "${missing}" == "java" ]; then
+        if [ "${missing}" == "${JAVA_BIN}" ]; then
             echo -e " - ${LIGHT_GRAY}Java (JDK or JRE, headless preferred)${RESET}"
         else
             echo -e " - ${LIGHT_GRAY}${missing}${RESET}"
@@ -484,7 +503,7 @@ elif [[ "$isRelease" -eq 1 ]] && [[ "$javaCompatible" -eq 1 ]]; then
 		rm -f "${serverFile}" 2>/dev/null
 		wget "${releaseDownloadURL}" -P "${serverDir}" -q --show-progress
 	else
-		echo -e "${YELLOW} [!] SKipping update ${RESET}"
+		echo -e "${YELLOW} [!] Skipping update ${RESET}"
 	fi
 
 elif [[ "$isRelease" -eq 0 ]] && [[ "$javaCompatible" -eq 1 ]] && [[ "$forceDownload" -eq 1 ]]; then
@@ -547,7 +566,7 @@ if [ "$startMC" -eq 1 ]; then
 
 	echo -e "${GREEN} [+] All ready: starting MC server ${RESET}"
 	echo -e "${GREEN} [+] Server version: ${LIGHT_GRAY}$(serverVersion) ${RESET}"
-	su ${mcServerUser} -s '/bin/bash' -c "cd ${javaDir} && screen -dmS ${mcServiceName} java -Xmx${MAXIMUM_MEMORY} -Xms${INITIAL_MEMORY} -jar ${serverFile} --world ${WORLD_NAME} --universe ${worldDir} --nogui"
+	su ${mcServerUser} -s '/bin/bash' -c "cd ${javaDir} && screen -dmS ${mcServiceName} ${JAVA_BIN} -Xmx${MAXIMUM_MEMORY} -Xms${INITIAL_MEMORY} -jar ${serverFile} --world ${WORLD_NAME} --universe ${worldDir} --nogui"
 	if [ $? -eq 0 ]; then
 		echo -e "${GREEN}[\u2713] MC server started successfully ${RESET}"
 		exit 1
