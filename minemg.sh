@@ -29,13 +29,23 @@ mcServiceName="${mcServiceName:-minecraft_server}"
 
 ### DIRECTORIES
 # Main server directory
-serviceDir="${serviceDir:-/opt/minecraft}"
-# Server directories
-serverDir="${serverDir:-${serviceDir}/server}"
-serverFile="${serverFile:-${serverDir}/server.jar}"
-javaDir="${javaDir:-${serviceDir}/java}"
-worldDir="${worldDir:-${serviceDir}/world}"
-log_file="${log_file:-${javaDir}/logs/latest.log}"
+if [ -z "${serviceDir}" ]; then
+	serviceDir="/opt/minecraft"
+	# Server directories
+	serverDir="${serviceDir}/server"
+	serverFile="${serverDir}/server.jar"
+	javaDir="${serviceDir}/java"
+	worldDir="${serviceDir}/world"
+	logFile="${javaDir}/logs/latest.log"
+	
+else
+	# Server directories
+	serverDir="${serverDir:-${serviceDir}/server}"
+	serverFile="${serverFile:-${serverDir}/server.jar}"
+	javaDir="${javaDir:-${serviceDir}/java}"
+	worldDir="${worldDir:-${serviceDir}/world}"
+	logFile="${logFile:-${javaDir}/logs/latest.log}"
+fi
 
 ### JAVA
 # Java binary path (multi-version environments)
@@ -264,7 +274,7 @@ function serverCommand() {
 		echo -e "${BLUE}[+] Printing server response ${RESET}"
 		# Yeah, I know, it's a super long string manipulation
 		# But it's also the easiest solution that came to my mind
-		response=$(sed -n "/${timeID}/,/${log_end}/p" "${log_file}" | tail -n +2 | head -n -2 | cut -d ':' -f4 | sed 's/^[[:space:]]*//g')
+		response=$(sed -n "/${timeID}/,/${log_end}/p" "${logFile}" | tail -n +2 | head -n -2 | cut -d ':' -f4 | sed 's/^[[:space:]]*//g')
 		echo "${response}"
 		exit 0
 	else
