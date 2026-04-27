@@ -239,10 +239,10 @@ function createBackup() {
         echo -e "${BLUE}[+] Server is running. Preparing live backup... ${RESET}"
         
         echo -e "${BLUE} [+] Disabling world saving (save-off)... ${RESET}"
-        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-off\$(printf \\r)\"" > /dev/null 2>&1
+        su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"save-off\$(printf \\r)\"" > /dev/null 2>&1
         
         echo -e "${BLUE} [+] Flushing memory to disk (save-all)... ${RESET}"
-        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-all\$(printf \\r)\"" > /dev/null 2>&1
+        su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"save-all\$(printf \\r)\"" > /dev/null 2>&1
         
         # Give server time to finish writing chunks to disk
         sleep 5
@@ -257,7 +257,7 @@ function createBackup() {
     
     if [ "$is_running" -eq 1 ]; then
         echo -e "${BLUE} [+] Re-enabling world saving (save-on)... ${RESET}"
-        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-on\$(printf \\r)\"" > /dev/null 2>&1
+        su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"save-on\$(printf \\r)\"" > /dev/null 2>&1
     fi
 
 	# Set ownership if backup is successful
@@ -284,9 +284,9 @@ function serverCommand() {
 		echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
-	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${log_start}$(printf \\r)\"" > /dev/null 2>&1
-	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
-	su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"${log_end}$(printf \\r)\"" > /dev/null 2>&1
+	su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"${log_start}$(printf \\r)\"" > /dev/null 2>&1
+	su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"${mc_cmd}$(printf \\r)\"" > /dev/null 2>&1
+	su ${mcServerUser} -s '/bin/bash' -c "screen -S ${mcServiceName} -p 0 -X stuff \"${log_end}$(printf \\r)\"" > /dev/null 2>&1
 	if [ $? -eq 0 ]; then
 		if [ $(serverStatus) -eq 1 ] && [ "$serverStop" -eq 1 ]; then
 			echo -e "${BLUE}[+] Stopping MC server ... ${RESET}"
