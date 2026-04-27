@@ -231,7 +231,7 @@ function createBackup() {
 	fi
 	
 	# Now execute the command as the service user and check whether it succeed or not
-	local backupName="$(date "+%Y-%m-%d")_${WORLD_NAME}_bak.tar.gz"
+	local backupName="$(date "+%Y-%m-%d_%H%M%S%3N")_${WORLD_NAME}_bak.tar.gz"
 	local is_running=$(serverStatus)
 
 	# Verify server status and define strategy
