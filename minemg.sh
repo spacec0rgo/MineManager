@@ -208,19 +208,12 @@ function removeLogs() {
 function createBackup() {
 	local backupPath="$1"
 	# First of all, check that the variable contains a value
-	# We first need to check if there is an instance of the MC server
 	if [ -z "${backupPath}" ]; then
         echo -e "${YELLOW}[!] No backup path provided ${RESET}"
         echo -e "${RED}[\u00d7] Aborted ${RESET}"
 		exit 1
 	fi
-	# backup must be performed when the server is stopped
-	if [ $(serverStatus) -eq 1 ]; then
-        echo -e "${YELLOW}[!] Cannot create backup when server is running ${RESET}"
-        echo -e "${YELLOW}[+] Stop the MC server and retry ${RESET}"
-		exit 1
-	fi
-	# Then we need to confirm the world directory indeed exists
+	# We need to confirm the world directory indeed exists
 	if [[ ! -d "${worldDir}/${WORLD_NAME}" ]]; then
 		echo -e "${YELLOW}[!] Found no world named ${LIGHT_GRAY}$WORLD_NAME${YELLOW} inside ${LIGHT_GRAY}$worldDir ${RESET}"
         echo -e "${RED}[\u00d7] Aborted ${RESET}"
@@ -239,14 +232,43 @@ function createBackup() {
 	
 	# Now execute the command as the service user and check whether it succeed or not
 	local backupName="$(date "+%Y-%m-%d")_${WORLD_NAME}_bak.tar.gz"
-	tar -czf ${backupName} -C "${backupPath}" "${worldDir}/${WORLD_NAME}" > /dev/null 2>&1
-	if [ $? -eq 0 ]; then
-		echo -e "${BLUE}[+] Successfully created ${LIGHT_GRAY}$backupName${YELLOW} at ${LIGHT_GRAY}$backupPath ${RESET}"
-		chown "${mcServerUser}:${mcServerUser}" "${backupPath}/${backupName}"
-	else
-		echo -e "${YELLOW}[!] Error creating ${LIGHT_GRAY}$backupName${YELLOW}: something went wrong ${RESET}"
-	fi
-	exit 0
+	local is_running=$(serverStatus)
+
+	# Verify server status and define strategy
+	if [ "$is_running" -eq 1 ]; then
+        echo -e "${BLUE}[+] Server is running. Preparing live backup... ${RESET}"
+        
+        echo -e "${BLUE} [+] Disabling world saving (save-off)... ${RESET}"
+        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-off\$(printf \\r)\"" > /dev/null 2>&1
+        
+        echo -e "${BLUE} [+] Flushing memory to disk (save-all)... ${RESET}"
+        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-all\$(printf \\r)\"" > /dev/null 2>&1
+        
+        # Give server time to finish writing chunks to disk
+        sleep 5
+    else
+        echo -e "${BLUE}[+] Server is offline. Proceeding with standard backup... ${RESET}"
+    fi
+
+    echo -e "${BLUE}[+] Compressing world data... ${RESET}"
+    # tar -czf ${backupName} -C "${backupPath}" "${worldDir}/${WORLD_NAME}" > /dev/null 2>&1
+    tar -czf "${backupPath}/${backupName}" -C "${worldDir}" "${WORLD_NAME}" > /dev/null 2>&1
+    local tar_status=$?
+    
+    if [ "$is_running" -eq 1 ]; then
+        echo -e "${BLUE} [+] Re-enabling world saving (save-on)... ${RESET}"
+        su ${mcServerUser} -s '/bin/bash' -c "screen -L -S ${mcServiceName} -p 0 -X stuff \"save-on\$(printf \\r)\"" > /dev/null 2>&1
+    fi
+
+	# Set ownership if backup is successful
+    if [ $tar_status -eq 0 ]; then
+        echo -e "${GREEN}[\u2713] Successfully created ${LIGHT_GRAY}$backupName${GREEN} at ${LIGHT_GRAY}${backupPath} ${RESET}"
+        chown "${mcServerUser}:${mcServerUser}" "${backupPath}/${backupName}"
+    else
+        echo -e "${RED}[\u00d7] Error creating ${LIGHT_GRAY}$backupName${RED}: something went wrong ${RESET}"
+        exit 1
+    fi
+    exit 0
 }
 
 function serverCommand() {
